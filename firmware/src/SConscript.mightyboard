@@ -134,7 +134,7 @@ def get_default_version():
 	ver = vstr.split('\n')[0]
 	return parse_version(ver)
 
-vstr = File('#/current_version.txt').get_contents().strip()
+vstr = File('#/current_version.txt').get_contents().strip().decode('ascii')
 vstr = vstr.split('\n')[0]
 
 vstr = ARGUMENTS.get('version',vstr)
@@ -193,7 +193,7 @@ for s in features.get('squeeze', []):
     if s[0] != '[':
        squeeze_srcs.append(s)
     else:
-	squeeze_srcs += eval(s)
+	     squeeze_srcs += eval(s)
 
 # Must not have SoftI2cManager.cc
 softi2c = [item for item in squeeze_srcs if item.endswith('SoftI2cManager.cc')]
@@ -253,18 +253,18 @@ if (alt_uart == '1'):
 if (zlevel == '1'):
    flags.append('-DPSTOP_ZMIN_LEVEL')
 
-if (os.environ.has_key('BUILD_NAME')):
+if ('BUILD_NAME' in os.environ):
    flags.append('-DBUILD_NAME=' + os.environ['BUILD_NAME'])
 
-if (os.environ.has_key('AVR_TOOLS_PATH')):
+if ('AVR_TOOLS_PATH' in os.environ):
 	avr_tools_path = os.environ['AVR_TOOLS_PATH'].strip()
 	avr_tools_conf = os.environ['AVR_TOOLS_PATH'].strip() + "/../etc/avrdude.conf"
 ## why AVR32_HOME? we have an avr not avr32!
 ## This conflicts with cygwin, if winavr is installed.
-#elif (os.environ.has_key('AVR32_HOME')):
+#elif ('AVR32_HOME' in os.environ):
 #	avr_tools_path = os.environ['AVR32_HOME'] + '/bin'
 #	avr_tools_conf =  os.environ['AVR32_HOME'] + "/etc/avrdude.conf"
-elif (os.environ.has_key('AVR_HOME')):
+elif ('AVR_HOME' in os.environ):
 	avr_tools_path = os.environ['AVR_HOME'].strip() + '/bin'
 	avr_tools_conf =  os.environ['AVR_HOME'].strip() + "/etc/avrdude.conf"
 else:
@@ -297,20 +297,20 @@ env_sqz=Environment(tools=['g++', 'gcc'],
 env.AddMethod(filtered_glob_omit, "GlobOmit")
 env_sqz.AddMethod(filtered_glob_keep, "GlobKeep")
 
-objs = [ env.Object(env.GlobOmit('*.cc', squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/Motherboard/boards/%s/*.cc' % board_directory, squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/shared/*.cc', squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs) +
-                    env.GlobOmit('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)),
-         env_sqz.Object(env_sqz.GlobKeep('*.cc', squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/Motherboard/*.cc', squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/Motherboard/boards/%s/*.cc' % board_directory, squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/shared/*.cc', squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs) +
-                        env_sqz.GlobKeep('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs)) ]
+objs = [ env.Object(list(env.GlobOmit('*.cc', squeeze_srcs)) +
+                    list(env.GlobOmit('MightyBoard/Motherboard/*.cc', squeeze_srcs)) +
+                    list(env.GlobOmit('MightyBoard/Motherboard/boards/%s/*.cc' % board_directory, squeeze_srcs)) +
+                    list(env.GlobOmit('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs)) +
+                    list(env.GlobOmit('MightyBoard/shared/*.cc', squeeze_srcs)) +
+                    list(env.GlobOmit('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs)) +
+                    list(env.GlobOmit('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs))),
+         env_sqz.Object(list(env_sqz.GlobKeep('*.cc', squeeze_srcs)) +
+                        list(env_sqz.GlobKeep('MightyBoard/Motherboard/*.cc', squeeze_srcs)) +
+                        list(env_sqz.GlobKeep('MightyBoard/Motherboard/boards/%s/*.cc' % board_directory, squeeze_srcs)) +
+                        list(env_sqz.GlobKeep('MightyBoard/Motherboard/lib_sd/*.c', squeeze_srcs)) +
+                        list(env_sqz.GlobKeep('MightyBoard/shared/*.cc', squeeze_srcs)) +
+                        list(env_sqz.GlobKeep('MightyBoard/shared/locale/%s' % localefile, squeeze_srcs)) +
+                        list(env_sqz.GlobKeep('MightyBoard/Motherboard/avrfix/*.c', squeeze_srcs))) ]
 
 # run_alias = Alias('run', [program], program[0].path)
 # AlwaysBuild(run_alias)

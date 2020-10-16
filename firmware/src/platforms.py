@@ -508,4 +508,4 @@ if __name__ == '__main__':
     list = ''
     for key in platforms:
         list += key + ' '
-    print list[:-1]
+    print(list[:-1])
