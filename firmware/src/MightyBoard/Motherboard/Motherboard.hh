@@ -54,6 +54,7 @@
 #endif
 
 #if defined(COOLING_FAN_PWM)
+extern uint8_t fan_pwm_last_speed;
 extern bool fan_pwm_enable;
 #endif
 
@@ -209,7 +210,7 @@ public:
 
 	bool isUsingPlatform() { return using_platform; }
 	void setUsingPlatform(bool is_using);
-	static void setExtra(bool on);
+	static void setExtra(uint8_t speed);
 	Heater& getPlatformHeater() { return platform_heater; }
 
 	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	

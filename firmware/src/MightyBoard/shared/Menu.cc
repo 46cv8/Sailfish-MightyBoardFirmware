@@ -3013,12 +3013,12 @@ ActiveBuildMenu::ActiveBuildMenu() :
 
 void ActiveBuildMenu::resetState() {
 #if defined(COOLING_FAN_PWM)
-	fanState = fan_pwm_enable;
+	fanState = (fan_pwm_enable ? (uint8_t)fan_pwm_last_speed : (EX_FAN.getValue() ? (uint8_t)0 : (uint8_t)100));
 #else
 	// When PWM mode is in used, the fan pin goes on
 	// and off at high frequency.  Cannot use the pin's
 	// state to ascertain if the fan is logically on.
-	fanState = EX_FAN.getValue();
+	fanState = (EX_FAN.getValue() ? (uint8_t)0 : (uint8_t)100);
 #endif
 #ifdef HAS_RGB_LED
 	LEDColor = LEDColorInitial = eeprom::getColor();
@@ -3106,7 +3106,7 @@ void ActiveBuildMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd) {
 
 	// Fan should be off when paused
 	if ( !is_paused ) {
-		if ( index == lind ) msg = fanState ? FAN_OFF_MSG : FAN_ON_MSG;
+		if ( index == lind ) msg = (fanState > 0) ? FAN_OFF_MSG : FAN_ON_MSG;
 		lind++;
 	}
 
@@ -3223,7 +3223,12 @@ void ActiveBuildMenu::handleSelect(uint8_t index) {
 	// Fan should be off when paused
 	if ( !is_paused ) {
 		if ( index == lind ) {
-			fanState = !fanState;
+		  if (fanState  > 0) {
+		    fanState = 0;
+		  }
+		  else {
+		    fanState = 100;
+		  }
 			Motherboard::setExtra(fanState);
 			lineUpdate = true;
 			return;

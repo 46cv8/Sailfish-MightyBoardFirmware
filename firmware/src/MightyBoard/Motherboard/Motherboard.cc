@@ -95,6 +95,7 @@ static bool heating_lights_active;
 
 #if defined(COOLING_FAN_PWM)
 #define FAN_PWM_BITS 6
+uint8_t fan_pwm_last_speed;
 static uint8_t fan_pwm_bottom_count;
 bool           fan_pwm_enable = false;
 #endif
@@ -439,7 +440,7 @@ void Motherboard::reset(bool hard_reset) {
 
 	// turn off the active cooling fan
 	EXTRA_FET.setDirection(true);
-	setExtra(false);
+	setExtra((uint8_t)0);
 }
 
 /// Get the number of microseconds that have passed since
@@ -1006,41 +1007,44 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 #if defined(COOLING_FAN_PWM)
 
-void Motherboard::setExtra(bool on) {
-     uint16_t fan_pwm; // Will be multiplying 8 bits by 100(decimal)
+void Motherboard::setExtra(uint8_t speed) {
+     // Will be multiplying 8 bits by 100(decimal)
+     fan_pwm_last_speed = (uint8_t)speed;
 
      // Disable any fan PWM handling in Timer 5
      fan_pwm_enable = false;
 
-     if ( !on ) {
-	  EXTRA_FET.setValue(false);
-	  return;
+     if ( speed == 0 ) {
+         EXTRA_FET.setValue(false);
+         return;
      }
 
+     /*
      // See what the PWM setting is -- may have been changed
      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	  fan_pwm = (uint16_t)eeprom::getEeprom8(eeprom_offsets::COOLING_FAN_DUTY_CYCLE,
 						 COOLING_FAN_DUTY_CYCLE_DEFAULT);
      }
+     */
 
      // Don't bother with PWM handling if the PWM is >= 100
      // Just turn the fan on full tilt
-     if ( fan_pwm >= 100 ) {
-	  EXTRA_FET.setValue(true);
-	  return;
+     if ( speed >= 100 ) {
+         EXTRA_FET.setValue(true);
+         return;
      }
 
      // Fan is to be turned on AND we are doing PWM
      // We start the bottom count at 255 - 64 and then wrap
      fan_pwm_enable = true;
      fan_pwm_bottom_count = (255 - (1 << FAN_PWM_BITS)) +
-	  (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * fan_pwm) / 100.0);
+	  (int)(0.5 +  ((uint16_t)(1 << FAN_PWM_BITS) * (uint16_t)speed) / 100.0);
 }
 
 #else
 
-void Motherboard::setExtra(bool on) {
-     EXTRA_FET.setValue(on);
+void Motherboard::setExtra(uint8_t speed) {
+     EXTRA_FET.setValue(speed > 0);
 }
 
 #endif

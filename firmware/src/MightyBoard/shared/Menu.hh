@@ -410,7 +410,7 @@ class ActiveBuildMenu: public Menu {
 
 private:
 	//Fan ON/OFF
-	bool fanState;
+	uint8_t fanState;
 	bool is_hot;
 	bool is_heating;
 	uint8_t is_paused;

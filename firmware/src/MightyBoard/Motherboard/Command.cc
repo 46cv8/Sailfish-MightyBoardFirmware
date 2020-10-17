@@ -118,7 +118,7 @@ uint16_t altTemp[EXTRUDERS+1];
 int16_t pausedPlatformTemp;
 int16_t pausedExtruderTemp[EXTRUDERS];
 uint8_t pausedDigiPots[STEPPER_COUNT] = { STEPPERS_(0, 0, 0, 0, 0) };
-bool pausedFanState;
+uint8_t pausedFanState;
 
 uint8_t buildPercentage = 101;
 #if defined(BUILD_STATS) || defined(ESTIMATE_TIME)
@@ -235,7 +235,7 @@ void alevel_update(Point &newPoint) {
 
 static void heatersOff() {
      Motherboard::heatersOff(true);
-     Motherboard::getBoard().setExtra(false);
+     Motherboard::getBoard().setExtra((uint8_t)0);
 }
 
 static void cancelMidBuild() {
@@ -935,7 +935,7 @@ bool processExtruderCommandPacket(int8_t overrideToolIndex) {
 			board.getExtruderBoard(toolIndex).setFan((command_buffer[4] & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_TOGGLE_VALVE:
-		        board.setExtra((command_buffer[4] & 0x01) != 0);
+		        board.setExtra((uint8_t)(command_buffer[4]));
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
 			if ( !eeprom::hasHBP() ) return true;
@@ -1031,14 +1031,14 @@ void handlePauseState(void) {
 
 		    // Turn the fan off
 #if defined(COOLING_FAN_PWM)
-		    pausedFanState = fan_pwm_enable;
+		    pausedFanState = (fan_pwm_enable ? (uint8_t)fan_pwm_last_speed : (EX_FAN.getValue() ? (uint8_t)0 : (uint8_t)100));
 #else
 		    // When PWM mode is in used, the fan pin goes on
 		    // and off at high frequency.  Cannot use the pin's
 		    // state to ascertain if the fan is logically on.
-		    pausedFanState = EX_FAN.getValue();
+		    pausedFanState = (EX_FAN.getValue() ? (uint8_t)0 : (uint8_t)100);
 #endif
-		    board.setExtra(false);
+		    board.setExtra((uint8_t)0);
 
 		    //Store the current heater temperatures for restoring later
 		    pausedExtruderTemp[0] = (int16_t)board.getExtruderBoard(0).getExtruderHeater().get_set_temperature();
