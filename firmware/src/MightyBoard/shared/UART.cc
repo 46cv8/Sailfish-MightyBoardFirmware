@@ -89,8 +89,8 @@ volatile uint8_t loopback_bytes = 0;
 // Use double-speed mode for more accurate baud rate?
 #define UBRR0_VALUE 16 // 115200 baud
 #ifdef ALTERNATE_UART
-// Alternate UART uses 115200 on both UARTS
-#define UBRR1_VALUE 16 // 115200 baud
+// Alternate UART uses 500000
+#define UBRR1_VALUE 3 // 500000 baud
 #else
 // SLAVE_UART uses 38400 for the RS485 bus
 #define UBRR1_VALUE 51 // 38400 baud
